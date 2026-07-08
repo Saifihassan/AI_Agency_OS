@@ -1,0 +1,16 @@
+[theme]
+base = "dark"
+
+# Brand Purple
+primaryColor = "#8B5CF6"
+
+# Main App Background
+backgroundColor = "#18141F"
+
+# Cards / Sidebar
+secondaryBackgroundColor = "#24212B"
+
+# Main Text
+textColor = "#F5F3FF"
+
+font = "sans serif"

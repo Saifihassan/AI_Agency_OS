@@ -5,6 +5,10 @@ from pages.research import show_research
 from pages.marketing import show_marketing
 
 
+st.set_page_config(
+    layout="wide"
+)
+
 st.sidebar.title("AI Agency OS")
 
 
@@ -25,3 +29,6 @@ with st.sidebar:
 
 
 pg.run()
+# st.button("Red Button")
+# st.progress(50)
+# st.slider("Test", 0, 100)

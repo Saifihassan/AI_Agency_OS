@@ -1,5 +1,10 @@
 import streamlit as st
 
+
+st.set_page_config(
+    layout="wide",
+    
+)
 def run_dashboard():
     # Top Header section
     st.markdown("<h2>Good Morning, Hassan! 👋</h2>", unsafe_allow_html=True)
@@ -7,7 +12,7 @@ def run_dashboard():
     st.markdown("<br>", unsafe_allow_html=True)
 
     # Main Layout
-    left_col, right_col = st.columns([1.3, 1], gap="medium")
+    left_col, right_col = st.columns([5, 3], gap="medium")
 
     with left_col:
         with st.container(border=True):
@@ -30,8 +35,8 @@ def run_dashboard():
             market_item("🚀", "Instagram tests new Reels length up to 3 minutes", "6h ago")
             market_item("🎯", "TikTok engagement rate is up 18% this week", "8h ago")
             
-            st.write("")
-            st.markdown("View full market intelligence →")
+            # st.write("")
+            st.markdown("View full market intelligence →", unsafe_allow_html=True)
 
     with right_col:
         with st.container(border=True):
@@ -53,7 +58,7 @@ def run_dashboard():
                 st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
                 st.button("📊 View Reports", use_container_width=True)
     
-    RecentActivity,AIActivity=st.columns([2,2],border=True)
+    RecentActivity,AIActivity=st.columns([4,2],border=True)
     with RecentActivity:
         st.markdown("#### Recent Activity")
         def recent_activity_item(icon, text, time):
@@ -73,18 +78,23 @@ def run_dashboard():
         recent_activity_item("🤖", "OpenAI announced new pricing for GPT-4o", "2h ago")
 
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("<div style='text-align: left;'>View all market news</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: left; margin-bottom:30px'>View all market news</div>", unsafe_allow_html=True)
 
 
     with AIActivity:
         st.markdown("### AI Usage")
         def ai_acitivity_item(icon,text,number):
-            col1,col2,col3=st.columns([1,10,3])
-            with col1:
-                st.write(icon)
-            with col2:
-                st.write(text)
-            with col3:
-                st.write(number)
-        ai_acitivity_item("🧠","Models", 3250)
+            with st.container(border=True):
+                col1,col2,col3=st.columns([1,5,3])
+                with col1:
+                    st.markdown(f"<span>{icon}</span>",unsafe_allow_html=True)
+                with col2:
+                    st.markdown(f"<p style='text-align:center;'>{text}</p>",unsafe_allow_html=True)
+                with col3:
+                    st.markdown(f"<p style='font-size:15px;'>{number}</p>",unsafe_allow_html=True)
+        ai_acitivity_item("🧠","Generated reports",38)
+        ai_acitivity_item("🧠","Generated reports",38)
+        ai_acitivity_item("🧠","Generated reports",38)
+        ai_acitivity_item("🧠","Generated reports",38)
+        ai_acitivity_item("🧠","Generated reports",38)
         

@@ -1,4 +1,4 @@
 import streamlit as st
-
+from components.marketing_comp import run_marketing
 def show_marketing():
-    st.title("Marketing")
+    run_marketing()
