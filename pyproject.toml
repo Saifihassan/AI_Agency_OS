@@ -5,5 +5,8 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "lucide-py>=0.3.5",
+    "openai-agents>=0.18.0",
     "streamlit>=1.59.0",
+    "streamlit-antd-components>=0.3.2",
 ]
