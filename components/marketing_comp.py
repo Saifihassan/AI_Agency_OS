@@ -1,95 +1,117 @@
+from datetime import datetime
+from agents import Runner
 import streamlit as st
+from ai_agents.market_news import market_intelligence_agent
+import os
+import asyncio
+async def run_marketing_agent():
+    result = await Runner.run(market_intelligence_agent,"most recent news of tech,marketing,startup,AI and how can it help marketing")
+    result.final_output.time_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return result.final_output
 
 
 def run_marketing():
+    # Load from cache if not in session state
+    if "news" not in st.session_state:
+        if os.path.exists("market_news_cache.json") and os.path.getsize("market_news_cache.json") > 0:
+            from ai_agents.schemas.schemas import MarketIntelligenceReport
+            with open("market_news_cache.json", "r", encoding="utf-8") as f:
+                try:
+                    st.session_state.news = MarketIntelligenceReport.model_validate_json(f.read())
+                except Exception:
+                    pass  # Ignore invalid JSON so the app doesn't crash
+
     # Header
     header_col1, header_col2 = st.columns([3, 1])
     with header_col1:
         st.header("Market Intelligence")
         st.caption("Stay ahead with the latest AI, marketing, SEO and social media updates.")
     with header_col2:
-        st.write(":material/notifications: June 8, 2025")
-        st.button(":material/refresh: Refresh News")
+        if "news" in st.session_state and st.session_state.news.time_stamp:
+            st.write(f":material/notifications: {st.session_state.news.time_stamp}")
+        else:
+            st.write(":material/notifications: No Data")
+            
+        if st.button(":material/refresh: Refresh News"):
+            with st.spinner("Fetching latest news..."):
+                news = asyncio.run(run_marketing_agent())
+                st.session_state.news = news
+                # Save to local file for persistence
+                with open("market_news_cache.json", "w", encoding="utf-8") as f:
+                    f.write(news.model_dump_json())
+                st.rerun()
+
 
     # Today's Market Brief
     with st.container(border=True):
         st.subheader(":material/content_paste: Today's Market Brief")
-        st.markdown("- :material/local_fire_department: OpenAI launches GPT-5 Enterprise with improved reasoning and context handling. **2h ago**")
-        st.markdown("- :material/trending_up: LinkedIn engagement rates are up 12% across all industries. **4h ago**")
-        st.markdown("- :material/campaign: Google Ads introduces AI Max for Search Campaigns. **6h ago**")
-        st.markdown("- :material/photo_camera: Instagram expands Reels to 3 minutes for all users globally. **8h ago**")
-        st.markdown("- :material/smart_toy: Runway releases new Gen-3 video model with major realism upgrade. **10h ago**")
-        st.markdown("[View Full Summary ->](#)")
+        if "news" in st.session_state:
+            for info in st.session_state.news.one_liner_headlines:      
+                st.markdown(f"- [{info.title}]({info.url})")
+
 
     # Main Content Columns
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        with st.container(border=True):
-            # with st.container(horizontal=True,gap="large"):
+    if "news" in st.session_state:
+        news = st.session_state.news
+        
+        # Group stories by category
+        categories = {}
+        opportunities = []
+        for story in news.analyzed_stories:
+            cat = story.category
+            if cat not in categories:
+                categories[cat] = []
+            categories[cat].append(story)
+            if story.agency_opportunity:
+                opportunities.append((story.headline, story.agency_opportunity))
+                
+        cat_names = list(categories.keys())
+        half = len(cat_names) // 2 + len(cat_names) % 2
+        col1_cats = cat_names[:half]
+        col2_cats = cat_names[half:]
 
-            title_col, link_col = st.columns([3, 1])
-            with title_col:
-                st.subheader(":material/smart_toy: AI News")
-            with link_col:
-                st.markdown("<div style='margin-top:10px;'><a href='#' >View All-></a></div>", unsafe_allow_html=True)
-            st.markdown("OpenAI launches GPT-5 Enterprise **2h ago**")
-            st.markdown("Anthropic introduces Claude 4 **5h ago**")
-            st.markdown("Google Gemini 2.5 Pro updated **7h ago**")
-            
-        with st.container(border=True):
-            title_col, link_col = st.columns([3, 1])
-            with title_col:
-                st.subheader(":material/search: SEO Updates")
-            with link_col:
-                st.markdown("<div style='margin-top:10px;'><a href='#' >View All-></a></div>", unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            for cat in col1_cats:
+                with st.container(border=True):
+                    st.subheader(f":material/article: {cat} News")
+                    for story in categories[cat]:
+                        srcs = ", ".join(story.sources)
+                        st.markdown(f"**[{story.headline}]({story.url})**")
+                        st.caption(f"{story.summary} | {srcs})")
+                        
+            with st.container(border=True):
+                st.subheader(":material/trending_up: Trends & Insights")
+                st.markdown(news.trends_and_insights)
 
-            st.markdown("Google June 2025 Core Update rolling out **2h ago**")
-            st.markdown("AI Overviews appear in more search queries **5h ago**")
-            st.markdown("New ranking factors observed in SERPs **8h ago**")
-            
-        with st.container(border=True):
-            st.subheader(":material/trending_up: Trending Topics")
-            st.markdown("`AI Agents` `B2B SaaS` `UGC` `Short-form Video` `Cold Outreach` `Automation` `Local SEO`")
+        with col2:
+            for cat in col2_cats:
+                with st.container(border=True):
+                    st.subheader(f":material/article: {cat} News")
+                    for story in categories[cat]:
+                        srcs = ", ".join(story.sources)
+                        st.markdown(f"**[{story.headline}]({story.url})**")
+                        st.caption(f"{story.summary} | {srcs})")
 
-    with col2:
-        with st.container(border=True):
-            title_col, link_col = st.columns([3, 1])
-            with title_col:
-                st.subheader(":material/rocket_launch: Marketing News")
-            with link_col:
-                st.markdown("<div style='margin-top:10px;'><a href='#' >View All-></a></div>", unsafe_allow_html=True)
-
-            st.markdown("Meta adds new AI tools for advertisers **3h ago**")
-            st.markdown("TikTok launches new ad placement options **6h ago**")
-            st.markdown("Email open rates are rising again in 2025 **9h ago**")
-            
-        with st.container(border=True):
-            title_col, link_col = st.columns([3, 1])
-            with title_col:
-                st.subheader(":material/link: Social Media Updates")
-            with link_col:
-                st.markdown("<div style='margin-top:10px;'><a href='#' >View All-></a></div>", unsafe_allow_html=True)
-
-            st.markdown("Instagram tests new carousel format **3h ago**")
-            st.markdown("LinkedIn introduces AI content suggestions **6h ago**")
-            st.markdown("YouTube expands partnerships program **10h ago**")
-            
-        with st.container(border=True):
-            title_col, link_col = st.columns([4, 1])
-            with title_col:
+            with st.container(border=True):
                 st.subheader(":material/lightbulb: Opportunities for Agencies")
-            with link_col:
-                st.markdown("<div style='margin-top:10px;'><a href='#' >View All-></a></div>", unsafe_allow_html=True)
-            
-            opp1, opp2 = st.columns(2)
-            with opp1:
-                with st.container(border=True):
-                    st.markdown("**Short-form video content is trending**")
-                    st.caption("Engagement is up across LinkedIn, TikTok and Instagram. Suggest to clients.")
-                    st.markdown("`High Opportunity`")
-            with opp2:
-                with st.container(border=True):
-                    st.markdown("**Google AI Overviews are expanding**")
-                    st.caption("More visibility shifts are happening. Offer SEO audits to clients.")
-                    st.markdown("`High Opportunity`")
+                
+                # Show up to 4 opportunities
+                for i in range(0, min(len(opportunities), 4), 2):
+                    opp_cols = st.columns(2)
+                    for j, opp_col in enumerate(opp_cols):
+                        if i + j < len(opportunities):
+                            headline, opp = opportunities[i + j]
+                            with opp_col:
+                                with st.container(border=True):
+                                    st.markdown(f"**{headline}**")
+                                    st.caption(opp)
+                                    st.markdown("`High Opportunity`")
+                                    
+            with st.container(border=True):
+                st.subheader(":material/strategy: Actionable Intelligence")
+                st.markdown(news.actionable_intelligence)
+                    
+    else:
+        st.info("No news data loaded. Click 'Refresh News' to fetch the latest market intelligence.")

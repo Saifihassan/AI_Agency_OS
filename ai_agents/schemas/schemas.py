@@ -14,16 +14,7 @@ class Article(BaseModel):
 class NewsSearcherOutput(BaseModel):
     articles: List[Article] = Field(description="List of raw articles found")
 
-class VerifiedStory(BaseModel):
-    title: str = Field(description="Title of the verified story")
-    url: str = Field(description="URL of the verified story")
-    source: str = Field(description="Source of the verified story")
-    published_date: str = Field(description="Date the story was published")
-    short_description: str = Field(description="A short description of the story")
-    is_trusted: bool = Field(description="True if the news is from a trusted source, False otherwise")
 
-class NewsVerifierOutput(BaseModel):
-    verified_stories: List[VerifiedStory] = Field(description="List of verified stories from trusted sources, with duplicates removed")
 
 class AnalyzedStory(BaseModel):
     headline: str = Field(description="Headline of the story")
@@ -32,8 +23,7 @@ class AnalyzedStory(BaseModel):
     summary: str = Field(description="A concise summary in 2-3 sentences")
     why_it_matters: str = Field(description="Why this news matters for digital marketers or agencies")
     agency_opportunity: str = Field(description="One practical opportunity an agency can offer clients based on this news")
-    is_trusted: bool = Field(description="Whether the news is verified to be from a trusted source")
-    sources: List[str] = Field(description="List of all verified sources used")
+    sources: List[str] = Field(description="List of sources used")
 
 class NewsAnalystOutput(BaseModel):
     analyzed_stories: List[AnalyzedStory] = Field(description="List of stories with detailed actionable intelligence")

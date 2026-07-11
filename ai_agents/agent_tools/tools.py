@@ -1,5 +1,5 @@
 
-from ai_agents.schemas.schemas import NewsSearcherOutput, NewsVerifierOutput, NewsAnalystOutput
+from ai_agents.schemas.schemas import NewsSearcherOutput, NewsAnalystOutput
 from tavily import TavilyClient
 from agents import function_tool,Agent
 import os
@@ -7,7 +7,7 @@ import json
 import requests
 from duckduckgo_search import DDGS
 from ai_agents.clients import groq,zenmux,sambanova,bluesmind,gemini,nara
-from ai_agents.prompts.prompts import NEWS_SEARCHER_INSTRUCTIONS, NEWS_ANALYST, NEWS_VERIFIER_INSTRUCTIONS
+from ai_agents.prompts.prompts import NEWS_SEARCHER_INSTRUCTIONS, NEWS_ANALYST
 tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 
 @function_tool
@@ -54,15 +54,8 @@ news_searcher = Agent(
     name="news_searcher",
     instructions=NEWS_SEARCHER_INSTRUCTIONS,
     model=bluesmind,
-    tools=[duckduckgo_search],
+    tools=[duckduckgo_search,tavily_search,serper_search],
     output_type=NewsSearcherOutput
-)
-news_verifier = Agent(
-    name="news_verifier",
-    instructions=NEWS_VERIFIER_INSTRUCTIONS,
-    model=nara,
-    tools=[duckduckgo_search],
-    output_type=NewsVerifierOutput
 )
 
 news_analyst=Agent(
@@ -72,5 +65,5 @@ news_analyst=Agent(
     output_type=NewsAnalystOutput
 )
 
-tools = [news_searcher.as_tool(tool_name="news_searcher",tool_description="searches the internet and provides latest market news"),news_verifier.as_tool(tool_name="news_verifier",tool_description="verifies the news and returns the results in a concise and informative manner"),news_analyst.as_tool(tool_name="news_analyst",tool_description="provides actionable intelligence for marketing agencies" )]
+tools = [news_searcher.as_tool(tool_name="news_searcher",tool_description="searches the internet and provides latest market news"),news_analyst.as_tool(tool_name="news_analyst",tool_description="provides actionable intelligence for marketing agencies" )]
 
