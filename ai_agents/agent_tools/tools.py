@@ -1,13 +1,13 @@
 
-from schemas.schemas import NewsSearcherOutput, NewsVerifierOutput, NewsAnalystOutput
+from ai_agents.schemas.schemas import NewsSearcherOutput, NewsVerifierOutput, NewsAnalystOutput
 from tavily import TavilyClient
 from agents import function_tool,Agent
 import os
 import json
 import requests
 from duckduckgo_search import DDGS
-from clients import groq,zenmux,sambanova,bluesmind
-from prompts.prompts import NEWS_SEARCHER_INSTRUCTIONS, NEWS_ANALYST, NEWS_VERIFIER_INSTRUCTIONS
+from ai_agents.clients import groq,zenmux,sambanova,bluesmind,gemini,nara
+from ai_agents.prompts.prompts import NEWS_SEARCHER_INSTRUCTIONS, NEWS_ANALYST, NEWS_VERIFIER_INSTRUCTIONS
 tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 
 @function_tool
@@ -54,13 +54,13 @@ news_searcher = Agent(
     name="news_searcher",
     instructions=NEWS_SEARCHER_INSTRUCTIONS,
     model=bluesmind,
-    tools=[tavily_search, duckduckgo_search, serper_search],
+    tools=[duckduckgo_search],
     output_type=NewsSearcherOutput
 )
 news_verifier = Agent(
     name="news_verifier",
     instructions=NEWS_VERIFIER_INSTRUCTIONS,
-    model=bluesmind,
+    model=nara,
     tools=[duckduckgo_search],
     output_type=NewsVerifierOutput
 )
@@ -68,7 +68,7 @@ news_verifier = Agent(
 news_analyst=Agent(
     name="news_analyst",
     instructions=NEWS_ANALYST,
-    model=sambanova,
+    model=gemini,
     output_type=NewsAnalystOutput
 )
 

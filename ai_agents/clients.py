@@ -44,3 +44,11 @@ bluesmind_client = AsyncOpenAI(
 )
 
 bluesmind = OpenAIChatCompletionsModel(model="gpt-4o", openai_client=bluesmind_client)
+
+# Gemini client
+gemini_client = AsyncOpenAI(
+    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+    api_key=os.getenv("GEMINI_API_KEY")
+)
+
+gemini = OpenAIChatCompletionsModel(model="gemini-2.5-flash", openai_client=gemini_client)
