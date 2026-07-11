@@ -61,7 +61,7 @@ news_searcher = Agent(
 news_analyst=Agent(
     name="news_analyst",
     instructions=NEWS_ANALYST,
-    model=gemini,
+    model=sambanova,
     output_type=NewsAnalystOutput
 )
 

@@ -15,6 +15,9 @@ def run_research():
             st.write("**Research Topic**")
             st.text_area("Research Topic", label_visibility="collapsed", placeholder="e.g., Impact of Generative AI on B2B SaaS marketing strategies in 2024...", height=100)
             
+            st.write("**Website URL**")
+            st.text_input("Website URL", label_visibility="collapsed", placeholder="https://example.com")
+            
             st.write("**Research Depth**")
             st.selectbox("Research Depth", ["Standard Analysis", "Deep Dive", "Quick Summary"], label_visibility="collapsed")
             
@@ -36,7 +39,7 @@ def run_research():
             # Top Bar
             top_col1, top_col2, top_col3 = st.columns([5, 2 ,2])
             with top_col1:
-                st.caption(":material/circle: REPORT_GENERATED_READY")
+                st.caption(":material/circle: REPORT GENERATED ")
             with top_col2:
                 st.button(":material/content_copy: Copy Text", use_container_width=True)
             with top_col3:

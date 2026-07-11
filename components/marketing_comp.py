@@ -33,13 +33,12 @@ def run_marketing():
             st.write(":material/notifications: No Data")
             
         if st.button(":material/refresh: Refresh News"):
-            with st.spinner("Fetching latest news..."):
                 news = asyncio.run(run_marketing_agent())
                 st.session_state.news = news
                 # Save to local file for persistence
                 with open("market_news_cache.json", "w", encoding="utf-8") as f:
                     f.write(news.model_dump_json())
-                st.rerun()
+                st.rerun()    
 
 
     # Today's Market Brief
