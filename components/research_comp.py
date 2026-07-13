@@ -29,6 +29,7 @@ def run_research():
                         report = asyncio.run(run_flow(research_topic, website_url))
                         st.session_state.research_report = report
                         st.success("Research generated successfully!")
+                        print(st.session_state.research_report)
                     except Exception as e:
                         st.error(f"Error generating research: {e}")
 
@@ -44,50 +45,143 @@ def run_research():
             st.markdown("[Q3 E-commerce Trends →](#)")
             
     with col_right:
-        # Report Container
-        with st.container(border=True):
-            # Top Bar
-            top_col1, top_col2, top_col3 = st.columns([5, 2 ,2])
-            with top_col1:
-                st.caption(":material/circle: REPORT GENERATED ")
-            with top_col2:
-                st.button(":material/content_copy: Copy Text", use_container_width=True)
-            with top_col3:
-                st.button(":material/download: Download PDF", use_container_width=True)
+        if "research_report" in st.session_state and st.session_state.research_report:
+            report_data = st.session_state.research_report
             
-            st.subheader("Generative AI in B2B SaaS Marketing (2024 Outlook)")
-            st.write("")
+            if not isinstance(report_data, dict):
+                # Handle old session state data gracefully
+                # st.warning("The report format has been updated to include more details. Please click 'Generate Research' again to view the new layout.")
+                st.session_state.research_report = None
+                st.rerun()
             
-            # Executive Summary
+            research = report_data["research"]
+            strategy = report_data["strategy"]
+            
+            # Report Container
             with st.container(border=True):
-                st.markdown("#### :material/description: Executive Summary")
-                st.write("The integration of Generative AI into B2B SaaS marketing workflows is accelerating, shifting from experimental pilot programs to core operational necessities. Early adopters are reporting significant decreases in content production costs while simultaneously seeing a marginal increase in MQL quality due to enhanced personalization capabilities at scale. The primary challenge identified is maintaining brand voice consistency across high-volume AI-generated outputs.")
+                # Top Bar
+                top_col1, top_col2, top_col3 = st.columns([5, 2, 2])
+                with top_col1:
+                    st.caption(":material/circle: REPORT GENERATED ")
+                with top_col2:
+                    st.button(":material/content_copy: Copy Text", use_container_width=True)
+                with top_col3:
+                    st.button(":material/download: Download PDF", use_container_width=True)
+                
+                st.subheader(research.report_title)
+                st.write("")
+                
+                # Create Tabs for better organization
+                tab1, tab2, tab3 = st.tabs(["Overview", "Findings", "Recommendations"])
+                
+                with tab1:
+                    # Executive Summary
+                    with st.container(border=True):
+                        st.markdown("#### :material/description: Executive Summary")
+                        st.write(research.executive_summary)
 
-            # Key Insights
-            ki_col1, ki_col2 = st.columns(2)
-            with ki_col1:
-                with st.container(border=True):
-                    st.markdown("#### :material/lightbulb: Key Insight 1")
-                    st.write("Hyper-personalization engines are outperforming generic automated outbound sequences by 3.4x in response rates.")
-            with ki_col2:
-                with st.container(border=True):
-                    st.markdown("#### :material/trending_up: Key Insight 2")
-                    st.write("SEO strategies are pivoting from pure keyword density to topical authority mapping, as LLM-based search behaviors emerge.")
+                    # Strategic Overview
+                    with st.container(border=True):
+                        st.markdown("#### :material/explore: Strategic Overview")
+                        st.write(strategy.strategic_overview)
+                        
+                    # Conclusion
+                    with st.container(border=True):
+                        st.markdown("#### :material/flag: Conclusion")
+                        st.write(strategy.conclusion)
+                        
+                    # Sources
+                    st.write("")
+                    st.caption("DATA SOURCES PROCESSED")
+                    all_sources = []
+                    for finding in research.findings:
+                        if hasattr(finding, 'sources') and finding.sources:
+                            all_sources.extend(finding.sources)
+                    
+                    unique_sources = {source.url: source for source in all_sources}.values()
+                    
+                    if unique_sources:
+                        pills_html = '''
+                        <style>
+                        .source-pill {
+                            display: inline-block;
+                            padding: 4px 12px;
+                            margin: 4px 4px 4px 0;
+                            border-radius: 16px;
+                            background-color: rgba(128, 128, 128, 0.1);
+                            border: 1px solid rgba(128, 128, 128, 0.2);
+                            text-decoration: none !important;
+                            font-size: 13px;
+                            color: inherit !important;
+                            transition: all 0.2s;
+                        }
+                        .source-pill:hover {
+                            background-color: rgba(128, 128, 128, 0.2);
+                            border-color: rgba(128, 128, 128, 0.4);
+                        }
+                        </style>
+                        <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px;">
+                        '''
+                        
+                        for source in unique_sources:
+                            # Using publisher as the pill text, but if it's too long or empty, fallback to title
+                            display_text = source.publisher if source.publisher else source.title
+                            # Truncate if too long
+                            if len(display_text) > 30:
+                                display_text = display_text[:27] + "..."
+                            
+                            pills_html += f'<a href="{source.url}" target="_blank" class="source-pill" title="{source.title}">{display_text}</a>'
+                            
+                        pills_html += '</div>'
+                        st.markdown(pills_html, unsafe_allow_html=True)
 
-            # Recommendations
+                with tab2:
+                    # Key Findings
+                    if research.findings:
+                        st.markdown("#### :material/search: Key Findings")
+                        for finding in research.findings:
+                            with st.container(border=True):
+                                st.markdown(f"**{finding.title}**")
+                                st.write(finding.explanation)
+                                st.caption(f"**Why it matters:** {finding.why_it_matters}")
+
+                with tab3:
+                    # Recommendations
+                    if strategy.prioritized_recommendations:
+                        st.markdown("#### :material/check_circle: Recommendations")
+                        for rec in strategy.prioritized_recommendations:
+                            with st.container(border=True):
+                                st.markdown(f"**{rec.title}**")
+                                st.write(rec.description)
+                                st.caption(f"**Business Impact:** {rec.business_impact}")
+
+                    # Quick Wins & Long-term Opportunities
+                    qw_col, lto_col = st.columns(2)
+                    with qw_col:
+                        if strategy.quick_wins:
+                            with st.container(border=True):
+                                st.markdown("#### :material/flash_on: Quick Wins")
+                                for qw in strategy.quick_wins:
+                                    st.markdown(f"**{qw.title}**")
+                                    for step in qw.action_steps:
+                                        st.markdown(f"- {step}")
+                    with lto_col:
+                        if strategy.long_term_opportunities:
+                            with st.container(border=True):
+                                st.markdown("#### :material/trending_up: Long Term Opportunities")
+                                for lto in strategy.long_term_opportunities:
+                                    st.markdown(f"**{lto.title}**")
+                                    st.write(lto.description)
+        else:
+            # Placeholder State before report is generated
             with st.container(border=True):
-                st.markdown("#### :material/check_circle: Recommendations")
-                st.markdown("- Develop a proprietary, fine-tuned model trained specifically on historical high-performing marketing collateral to ensure brand consistency.")
-                st.markdown("- Reallocate budget from low-tier freelance content production towards technical AI workflow specialists and prompt engineers.")
-
-            st.write("")
-            st.caption("DATA SOURCES PROCESSED")
-            ds_col1, ds_col2, ds_col3 = st.columns([1, 1, 1])
-            with ds_col1:
-                with st.container(border=True):
-                    st.write("Gartner Reports (2023-...)")
-            with ds_col2:
-                with st.container(border=True):
-                    st.write("Forrester B2B...")
-            with ds_col3:
-                st.write("") # empty space for the remaining width
+                # Top Bar
+                top_col1, top_col2, top_col3 = st.columns([5, 2 ,2])
+                with top_col1:
+                    st.caption(":material/circle: REPORT STATUS")
+                with top_col2:
+                    st.button(":material/content_copy: Copy Text", use_container_width=True, disabled=True)
+                with top_col3:
+                    st.button(":material/download: Download PDF", use_container_width=True, disabled=True)
+                
+                st.info("Fill out the form on the left and click 'Generate Research' to view the AI-powered research report here.")

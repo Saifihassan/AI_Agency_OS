@@ -42,6 +42,9 @@ async def run_flow(input:str,website_url:str):
         print(report.final_output)
         print("===================================")
 
-        return report.final_output
+        return {
+            "research": results.final_output,
+            "strategy": report.final_output
+        }
 
 
