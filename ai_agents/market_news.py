@@ -5,11 +5,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from datetime import datetime
 from ai_agents.schemas.schemas import MarketIntelligenceReport
 from dotenv import load_dotenv
-from httpx import __name
 from agents import Agent, Runner, trace, enable_verbose_stdout_logging
 import asyncio
 from ai_agents.agent_tools.tools import tools
-from ai_agents.clients import groq,zenmux,nara
+from ai_agents.clients import groq,zenmux,nara,gemini,generalcompute
 from ai_agents.prompts.prompts import MARKET_INTELLIGENCE_AGENT
 
 load_dotenv(override=True)

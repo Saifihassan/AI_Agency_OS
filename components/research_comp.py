@@ -13,15 +13,25 @@ def run_research():
             # st.caption("NEW RESEARCH QUERY")
             
             st.write("**Research Topic**")
-            st.text_area("Research Topic", label_visibility="collapsed", placeholder="e.g., Impact of Generative AI on B2B SaaS marketing strategies in 2024...", height=100)
+            research_topic = st.text_area("Research Topic", label_visibility="collapsed", placeholder="e.g., Impact of Generative AI on B2B SaaS marketing strategies in 2024...", height=100)
             
             st.write("**Website URL**")
-            st.text_input("Website URL", label_visibility="collapsed", placeholder="https://example.com")
+            website_url = st.text_input("Website URL", label_visibility="collapsed", placeholder="https://example.com")
             
             st.write("**Research Depth**")
             st.selectbox("Research Depth", ["Standard Analysis", "Deep Dive", "Quick Summary"], label_visibility="collapsed")
             
-            st.button(":material/auto_awesome: Generate Research", use_container_width=True)
+            if st.button(":material/auto_awesome: Generate Research", use_container_width=True):
+                with st.spinner("Generating Research..."):
+                    import asyncio
+                    from ai_agents.research import run_flow
+                    try:
+                        report = asyncio.run(run_flow(research_topic, website_url))
+                        st.session_state.research_report = report
+                        st.success("Research generated successfully!")
+                    except Exception as e:
+                        st.error(f"Error generating research: {e}")
+
 
         st.write("")
 

@@ -52,3 +52,20 @@ gemini_client = AsyncOpenAI(
 )
 
 gemini = OpenAIChatCompletionsModel(model="gemini-2.5-flash", openai_client=gemini_client)
+
+# IAMHC client
+iamhc_client = AsyncOpenAI(
+    # base_url=os.getenv("IAMHC_BASE_URL"),
+    base_url="https://api.iamhc.cn/v1",
+    api_key=os.getenv("IAMHC_API_KEY")
+)
+
+iamhc = OpenAIChatCompletionsModel(model="glm-5.2", openai_client=iamhc_client)
+
+# General Compute client
+generalcompute_client = AsyncOpenAI(
+    base_url=os.getenv("GENERALCOMPUTE_BASE_URL"),
+    api_key=os.getenv("GENERALCOMPUTE_API_KEY")
+)
+
+generalcompute = OpenAIChatCompletionsModel(model="minimax-m2.7", openai_client=generalcompute_client)
