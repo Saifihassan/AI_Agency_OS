@@ -1,4 +1,10 @@
 import streamlit as st
+from utils.pdf_gen import generate_pdf
+from utils.text_gen import generate_report_text
+
+@st.dialog("Copy Report Text", width="large")
+def copy_text_dialog(text):
+    st.code(text, language="markdown")
 
 def run_research():
     st.title("Research Reports")
@@ -64,9 +70,17 @@ def run_research():
                 with top_col1:
                     st.caption(":material/circle: REPORT GENERATED ")
                 with top_col2:
-                    st.button(":material/content_copy: Copy Text", use_container_width=True)
+                    if st.button(":material/content_copy: Copy Text", use_container_width=True):
+                        copy_text_dialog(generate_report_text(research, strategy))
                 with top_col3:
-                    st.button(":material/download: Download PDF", use_container_width=True)
+                    pdf_bytes = generate_pdf(research, strategy)
+                    st.download_button(
+                        label=":material/download: Download PDF",
+                        data=pdf_bytes,
+                        file_name="research_report.pdf",
+                        mime="application/pdf",
+                        use_container_width=True
+                    )
                 
                 st.subheader(research.report_title)
                 st.write("")

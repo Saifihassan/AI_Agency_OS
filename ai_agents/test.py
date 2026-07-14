@@ -8,11 +8,11 @@ sys_msg = """"""
 agent = Agent(
     name="test_agent",
     instructions="you write code for user's request ",
-    model=iamhc,
+    model=iamhc
 )
 
 async def main():
-    result = await Runner.run(agent, "create a library management system with all the necessary functionalities in python and output the entire python code without any strings attached to it so that i can copy it")
+    result = await Runner.run(agent, "create a hospital management system with all the necessary functionalities")
     print(result.final_output)
 
 if __name__ == "__main__":

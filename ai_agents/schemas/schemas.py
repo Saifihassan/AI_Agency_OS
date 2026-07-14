@@ -106,3 +106,26 @@ class StrategyReport(BaseModel):
     quick_wins: List[StrategyQuickWin] = Field(description="Quick wins that can be implemented immediately")
     long_term_opportunities: List[StrategyLongTermOpportunity] = Field(description="Long-term opportunities identified")
     conclusion: str = Field(description="A concise conclusion")
+
+
+class CampaignPlan(BaseModel):
+    business_summary: str
+    target_audience: str
+    campaign_goal: str
+    campaign_angle: str
+    tone_of_voice: str
+    key_selling_points: List[str]
+    primary_cta: str
+    platforms: List[str]
+
+class ContentGenerationRequest(BaseModel):
+    campaign_plan: CampaignPlan
+    requested_assets: List[str]
+
+class CampaignAssets(BaseModel):
+    campaign_strategy: Optional[str] = None
+    marketing_copy: Optional[str] = None
+    email_copy: Optional[str] = None
+    social_posts: Optional[List[str]] = None
+    cta_suggestions: Optional[List[str]] = None
+    hashtags: Optional[List[str]] = None

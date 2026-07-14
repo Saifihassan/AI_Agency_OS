@@ -1,4 +1,10 @@
 import streamlit as st
+import asyncio
+from ai_agents.campaign import run_campaign_agent
+
+@st.dialog("Copy Content", width="large")
+def copy_text_dialog(text):
+    st.code(text, language="markdown")
 
 def run_campaign():
     # Title Section
@@ -14,24 +20,39 @@ def run_campaign():
             st.subheader("Campaign Parameters")
             st.write("")
             
-            st.write("**Website URL**")
-            st.text_input("Website URL", label_visibility="collapsed", placeholder="https://example.com")
+            st.write("**Website URL or Business Description**")
+            website = st.text_area("Website URL", label_visibility="collapsed", placeholder="https://example.com")
             
             st.write("**Campaign Goal**")
-            st.selectbox("Campaign Goal", ["Lead Generation", "Brand Awareness", "Sales"], label_visibility="collapsed")
+            campaign_goal = st.text_input("Campaign Goal",label_visibility="collapsed")
             
             st.write("**Target Platform**")
-            st.multiselect(
+            target_platforms = st.multiselect(
                 "Target Platform", 
-                ["Google Ads", "Meta", "LinkedIn", "Email", "Social Media"], 
-                default=["Google Ads", "Meta", "LinkedIn", "Email", "Social Media"], 
+                ["Google Ads", "Email", "Instagram", "X", "LinkedIn", "Facebook"], 
+                default=["Google Ads", "Email", "LinkedIn"], 
                 label_visibility="collapsed"
             )
 
             st.write("")
-            st.button(":material/auto_awesome: Generate Campaign", use_container_width=True)
+            if st.button(":material/auto_awesome: Generate Campaign", use_container_width=True):
+                if not website and not campaign_goal:
+                    st.warning("Please provide a website or business description, and a campaign goal.")
+                elif not target_platforms:
+                    st.warning("Please select at least one target platform.")
+                else:
+                    with st.spinner("Generating Campaign Assets..."):
+                        try:
+                            assets = asyncio.run(run_campaign_agent(website, campaign_goal, target_platforms))
+                            st.session_state.campaign_assets = assets
+                            st.success("Campaign generated successfully!")
+                            print(assets)
+                        except Exception as e:
+                            st.error(f"Error generating campaign: {e}")
 
     with col_right:
+        assets = st.session_state.get("campaign_assets")
+
         # Top strategy card
         with st.container(border=True):
             strat_col1, strat_col2 = st.columns([5, 1])
@@ -40,50 +61,55 @@ def run_campaign():
             with strat_col2:
                 st.caption("DRAFT")
             
-            st.write("Focus on high-intent search queries related to \"AI automation tools\". Utilize exact match keywords for core offerings while testing broad match modifier for discovery. Landing page should emphasize speed and ROI.")
+            strategy_text = assets.campaign_strategy if assets and assets.campaign_strategy else "Run the campaign generator to populate your strategy."
+            st.write(strategy_text)
 
-        # Content columns
-        content_col1, content_col2 = st.columns(2)
+        # Create Tabs for better organization
+        tab1, tab2, tab3 = st.tabs(["Copywriting", "Social Media", "CTAs & Assets"])
         
-        with content_col1:
+        with tab1:
             with st.container(border=True):
                 st.markdown("#### :material/description: Marketing Copy")
                 with st.container(border=True):
-                    st.write("*\"Stop wasting hours on manual tasks. Deploy our AI Agency OS today and scale your operations 10x faster. Start your free trial now.\"*")
-                    # Adding empty space to match the height
+                    marketing_text = assets.marketing_copy if assets and assets.marketing_copy else "*No marketing copy generated yet.*"
+                    st.write(marketing_text)
                     st.write("")
                     st.write("")
-                    st.write("")
-                    st.write("")
-                    st.write("")
-                st.button("Copy to clipboard", key="copy_marketing")
+                if st.button("Copy to clipboard", key="copy_marketing"):
+                    copy_text_dialog(marketing_text)
 
             with st.container(border=True):
                 st.markdown("#### :material/mail: Email Copy")
                 with st.container(border=True):
-                    st.write("*Subject: Scale your agency 10x with AI OS*")
-                    st.write("")
-                    st.write("*Hi there, are you still manually handling tasks? Our AI Agency OS is designed to automate your workflow...*")
-                st.button("Copy to clipboard", key="copy_email")
+                    email_text = assets.email_copy if assets and assets.email_copy else "*No email copy generated yet.*"
+                    st.write(email_text)
+                if st.button("Copy to clipboard", key="copy_email"):
+                    copy_text_dialog(email_text)
 
-        with content_col2:
+        with tab2:
+            if assets and assets.social_posts:
+                for i, post in enumerate(assets.social_posts):
+                    with st.container(border=True):
+                        st.markdown(f"#### :material/chat: Post {i+1}")
+                        with st.container(border=True):
+                            st.write(post)
+                        if st.button("Copy to clipboard", key=f"copy_social_{i}"):
+                            copy_text_dialog(post)
+            else:
+                st.info("No social posts generated yet.")
+                
+            if assets and assets.hashtags:
+                with st.container(border=True):
+                    st.markdown("#### :material/tag: Hashtags")
+                    st.markdown("**" + " ".join(assets.hashtags) + "**")
+
+        with tab3:
             with st.container(border=True):
                 st.markdown("#### :material/ads_click: CTA Suggestions")
-                st.write("Start Scaling Today")
-                st.divider()
-                st.write("Deploy AI Now")
-                st.divider()
-                st.write("Get Your Demo")
-            
-            with st.container(border=True):
-                st.markdown("#### :material/link: Social Media Posts")
-                with st.container(border=True):
-                    st.write("*:material/rocket_launch: Stop wasting time on manual tasks! Deploy AI Agency OS and watch your productivity soar. #AIAgency #Automation*")
-                    st.write("")
-                st.button("Copy to clipboard", key="copy_social")
-
-            with st.container(border=True):
-                st.markdown("#### :material/tag: Hashtags")
-                st.markdown("**#AIAgency #Automation**")
-                st.markdown("**#MarketingTech #Growth**")
+                if assets and assets.cta_suggestions:
+                    for cta in assets.cta_suggestions:
+                        st.write(cta)
+                        st.divider()
+                else:
+                    st.info("No CTA suggestions generated yet.")
 

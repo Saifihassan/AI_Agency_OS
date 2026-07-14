@@ -89,7 +89,7 @@ news_searcher = Agent(
 news_analyst=Agent(
     name="news_analyst",
     instructions=NEWS_ANALYST,
-    model=generalcompute,
+    model=bluesmind,
     output_type=NewsAnalystOutput
 )
 

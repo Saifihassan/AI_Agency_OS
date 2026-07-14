@@ -24,7 +24,7 @@ strategy_advisor=Agent(
     name="strategy advisor",
     instructions=STRATEGY_ADVISOR,
     output_type=StrategyReport,
-    model=generalcompute,    
+    model=bluesmind,    
     tools=[firecrawl_scrape]
 
 )
