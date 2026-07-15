@@ -1,14 +1,8 @@
 from datetime import datetime
-from agents import Runner
 import streamlit as st
-from ai_agents.market_news import market_intelligence_agent
+from ai_agents.market_news import run_marketing_news_agent
 import os
 import asyncio
-async def run_marketing_agent():
-    result = await Runner.run(market_intelligence_agent,"most recent news of tech,marketing,startup,AI and how can it help marketing")
-    result.final_output.time_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    return result.final_output
-
 
 def run_marketing():
     # Load from cache if not in session state
@@ -27,18 +21,19 @@ def run_marketing():
         st.header("Market Intelligence")
         st.caption("Stay ahead with the latest AI, marketing, SEO and social media updates.")
     with header_col2:
-        if "news" in st.session_state and st.session_state.news.time_stamp:
-            st.write(f":material/notifications: {st.session_state.news.time_stamp}")
+        if "news" in st.session_state and hasattr(st.session_state.news, 'generated_at') and st.session_state.news.generated_at:
+            st.write(f":material/notifications: {st.session_state.news.generated_at}")
         else:
             st.write(":material/notifications: No Data")
             
         if st.button(":material/refresh: Refresh News"):
-                news = asyncio.run(run_marketing_agent())
+            with st.spinner("fetching latest news it may take a while..."):
+                news = asyncio.run(run_marketing_news_agent())
                 st.session_state.news = news
                 # Save to local file for persistence
                 with open("market_news_cache.json", "w", encoding="utf-8") as f:
                     f.write(news.model_dump_json())
-                st.rerun()    
+            st.rerun()    
 
 
     # Today's Market Brief
@@ -46,71 +41,39 @@ def run_marketing():
         st.subheader(":material/content_paste: Today's Market Brief")
         if "news" in st.session_state:
             for info in st.session_state.news.one_liner_headlines:      
-                st.markdown(f"- [{info.title}]({info.url})")
+                st.markdown(f"- {info}")
 
 
     # Main Content Columns
     if "news" in st.session_state:
         news = st.session_state.news
         
-        # Group stories by category
-        categories = {}
-        opportunities = []
-        for story in news.analyzed_stories:
-            cat = story.category
-            if cat not in categories:
-                categories[cat] = []
-            categories[cat].append(story)
-            if story.agency_opportunity:
-                opportunities.append((story.headline, story.agency_opportunity))
-                
-        cat_names = list(categories.keys())
-        half = len(cat_names) // 2 + len(cat_names) % 2
-        col1_cats = cat_names[:half]
-        col2_cats = cat_names[half:]
-
         col1, col2 = st.columns(2)
         
         with col1:
-            for cat in col1_cats:
+            for cat_news in news.categorized_news:
                 with st.container(border=True):
-                    st.subheader(f":material/article: {cat} News")
-                    for story in categories[cat]:
-                        srcs = ", ".join(story.sources)
-                        st.markdown(f"**[{story.headline}]({story.url})**")
-                        st.caption(f"{story.summary} | {srcs})")
-                        
-            with st.container(border=True):
-                st.subheader(":material/trending_up: Trends & Insights")
-                st.markdown(news.trends_and_insights)
+                    st.subheader(f":material/article: {cat_news.category}")
+                    for article in cat_news.articles:
+                        st.markdown(f"**[{article.title}]({article.url})**")
+                        st.caption(f"{article.summary} | {article.source} | {article.published_date}")
+                        st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
 
         with col2:
-            for cat in col2_cats:
-                with st.container(border=True):
-                    st.subheader(f":material/article: {cat} News")
-                    for story in categories[cat]:
-                        srcs = ", ".join(story.sources)
-                        st.markdown(f"**[{story.headline}]({story.url})**")
-                        st.caption(f"{story.summary} | {srcs})")
+            with st.container(border=True):
+                st.subheader(":material/trending_up: Market Trends")
+                for trend in news.market_trends:
+                    st.markdown(f"**{trend.title}**")
+                    st.write(trend.description)
+                    st.markdown("<hr style='margin: 0.5em 0; border: 0.5px solid #444;'>", unsafe_allow_html=True)
 
             with st.container(border=True):
                 st.subheader(":material/lightbulb: Opportunities for Agencies")
-                
-                # Show up to 4 opportunities
-                for i in range(0, min(len(opportunities), 4), 2):
-                    opp_cols = st.columns(2)
-                    for j, opp_col in enumerate(opp_cols):
-                        if i + j < len(opportunities):
-                            headline, opp = opportunities[i + j]
-                            with opp_col:
-                                with st.container(border=True):
-                                    st.markdown(f"**{headline}**")
-                                    st.caption(opp)
-                                    st.markdown("`High Opportunity`")
-                                    
-            with st.container(border=True):
-                st.subheader(":material/strategy: Actionable Intelligence")
-                st.markdown(news.actionable_intelligence)
+                for opp in news.opportunities:
+                    st.markdown(f"**{opp.title}**")
+                    st.write(opp.description)
+                    st.markdown("`High Opportunity`")
+                    st.markdown("<hr style='margin: 0.5em 0; border: 0.5px solid #444;'>", unsafe_allow_html=True)
                     
     else:
         st.info("No news data loaded. Click 'Refresh News' to fetch the latest market intelligence.")

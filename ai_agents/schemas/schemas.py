@@ -1,44 +1,56 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Literal
 
-class Article(BaseModel):
-    headline: str
+class NewsArticle(BaseModel):
+    title: str = Field(description="Headline of the article")
+    category: str = Field(description="AI, Marketing, SEO, Social Media, Advertising, Startups, Business Technology")
+    source: str = Field(description="Publisher")
+    url: str = Field(description="Article URL")
+    published_date: str = Field(description="Publication date")
+    summary: str = Field(description="2-3 sentence factual summary")
 
-    article_url: str
+class NewsResearch(BaseModel):
+    articles: List[NewsArticle] = Field(
+        description="Latest curated news articles"
+    )
 
-    source: str
+class CategorizedNews(BaseModel):
+    category: str = Field(description="News category")
+    articles: List[NewsArticle] = Field(
+        description="Articles belonging to this category"
+    )
 
-    published_date: str
+class MarketOpportunity(BaseModel):
+    title: str = Field(description="Opportunity title")
+    description: str = Field(
+        description="How agencies can capitalize on this opportunity"
+    )
 
-    summary: str
-class NewsSearcherOutput(BaseModel):
-    articles: List[Article] = Field(description="List of raw articles found")
-
-
-
-class AnalyzedStory(BaseModel):
-    headline: str = Field(description="Headline of the story")
-    url: str = Field(description="URL of the story")
-    category: str = Field(description="Category of the story (e.g., AI, Marketing, SEO)")
-    summary: str = Field(description="A concise summary in 2-3 sentences")
-    why_it_matters: str = Field(description="Why this news matters for digital marketers or agencies")
-    agency_opportunity: str = Field(description="One practical opportunity an agency can offer clients based on this news")
-    sources: List[str] = Field(description="List of sources used")
-
-class NewsAnalystOutput(BaseModel):
-    analyzed_stories: List[AnalyzedStory] = Field(description="List of stories with detailed actionable intelligence")
-
-class Headline(BaseModel):
-    title: str = Field(description="The one-liner headline text")
-    url: str = Field(description="The URL of the corresponding article")
+class MarketTrend(BaseModel):
+    title: str = Field(description="Trend title")
+    description: str = Field(
+        description="Explanation of the trend"
+    )
 
 class MarketIntelligenceReport(BaseModel):
-    report_title: str = Field(description="Title of the final intelligence report")
-    trends_and_insights: str = Field(description="High-level overview of the major trends found")
-    analyzed_stories: List[AnalyzedStory] = Field(description="The final list of analyzed stories")
-    actionable_intelligence: str = Field(description="Concluding thoughts on how to act on this intelligence")
-    time_stamp: str = Field(description="Timestamp of when the report was generated")
-    one_liner_headlines: List[Headline] = Field(description="List of one-liner headlines with URLs for the news searched, suitable for a quick market brief")
+    generated_at: str = Field(description="Timestamp")
+
+    one_liner_headlines: List[str] = Field(
+        description="Short dashboard headlines"
+    )
+
+    categorized_news: List[CategorizedNews] = Field(
+        description="News grouped by category"
+    )
+
+    market_trends: List[MarketTrend] = Field(
+        description="Major trends observed"
+    )
+
+    opportunities: List[MarketOpportunity] = Field(
+        description="Business opportunities for agencies"
+    )
+
 
 
 class Source(BaseModel):
@@ -129,3 +141,49 @@ class CampaignAssets(BaseModel):
     social_posts: Optional[List[str]] = None
     cta_suggestions: Optional[List[str]] = None
     hashtags: Optional[List[str]] = None
+
+class ProspectAnalysis(BaseModel):
+    company_summary: str
+    target_audience: str
+    current_positioning: str
+    identified_pain_points: List[str]
+    outreach_angle: str
+    value_proposition: str
+    service_offered: str
+
+class OutreachSequence(BaseModel):
+    tone: Literal["Friendly", "Professional", "Consultative", "Direct", "Founder-to-Founder"]
+    subject_lines: List[str]
+    cold_email: str
+    follow_up_email_1: str
+    follow_up_email_2: str
+    call_to_action: str
+
+class CompanySnapshot(BaseModel):
+    company_name: str = Field(description="Name of the company")
+    company_overview: str = Field(description="Short overview of the company")
+    industry: str = Field(description="Industry or category")
+    target_audience: str = Field(description="Primary customer segments")
+    market_position: str = Field(description="Leader, Challenger, Niche Player, Emerging, etc.")
+    core_differentiator: str = Field(description="The company's primary competitive advantage")
+
+class Opportunity(BaseModel):
+    title: str = Field(description="Short opportunity title")
+    description: str = Field(description="Explanation of the opportunity")
+
+class CompetitiveAnalysis(BaseModel):
+    company_snapshot: CompanySnapshot = Field(
+        description="Overview of the analyzed company"
+    )
+    strengths: List[str] = Field(
+        description="Company strengths"
+    )
+    weaknesses: List[str] = Field(
+        description="Company weaknesses"
+    )
+    opportunities: List[Opportunity] = Field(
+        description="Potential market or product opportunities"
+    )
+    recommended_strategy: str = Field(
+        description="Actionable strategy for competing against this company"
+    )

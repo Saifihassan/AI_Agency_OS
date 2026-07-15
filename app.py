@@ -3,7 +3,7 @@ import streamlit as st
 from pages.dashboard import show_dashboard  
 from pages.content_studio import show_content_studio
 from pages.research import show_research
-from pages.marketing import show_marketing
+from pages.marketing_page import show_marketing
 from pages.outreach import show_outreach
 from pages.competitior import show_competitor
 st.set_page_config(
@@ -22,7 +22,12 @@ outreach_page = st.Page(show_outreach, title="Outreach", icon=":material/send:")
 competitor_page = st.Page(show_competitor, title="Competitor", icon=":material/query_stats:")
 pages = [dashboard_page, content_studio_page, research_page, marketing_page, outreach_page, competitor_page]
 
-
+st.session_state.dashboard_page = dashboard_page
+st.session_state.content_studio_page = content_studio_page
+st.session_state.research_page = research_page
+st.session_state.marketing_page = marketing_page
+st.session_state.outreach_page = outreach_page
+st.session_state.competitor_page = competitor_page
 pg = st.navigation(pages,position="hidden")
 
 
