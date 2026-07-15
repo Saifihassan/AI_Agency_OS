@@ -10,8 +10,16 @@ st.set_page_config(
     layout="wide"
 )
 
-
-
+if 'recent_modules' not in st.session_state:
+    st.session_state.recent_modules = []
+if 'module_usage' not in st.session_state:
+    st.session_state.module_usage = {
+        "Marketing": 0,
+        "Campaign Studio": 0,
+        "Research": 0,
+        "Outreach": 0,
+        "Competitor Analysis": 0
+    }
 st.sidebar.markdown("<h1 style='font-size:25px; '>AI Agency OS</h1>", unsafe_allow_html=True)
 
 dashboard_page = st.Page(show_dashboard, title="Dashboard", icon=":material/dashboard:")

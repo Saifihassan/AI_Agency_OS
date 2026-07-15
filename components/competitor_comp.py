@@ -17,6 +17,8 @@ def run_competitor():
             analyze_clicked = st.button(":material/search: Analyze Competitors", use_container_width=True)
 
     if analyze_clicked:
+        st.session_state.recent_modules.insert(0, "Competitor Analysis")
+        st.session_state.module_usage["Competitor Analysis"] += 1
         with st.spinner("Analyzing Competitor..."):
             res = asyncio.run(run_competitor_agent(website))
             st.session_state.competitor_result = res

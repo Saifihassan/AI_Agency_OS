@@ -41,6 +41,8 @@ def run_campaign():
                 elif not target_platforms:
                     st.warning("Please select at least one target platform.")
                 else:
+                    st.session_state.recent_modules.insert(0, "Campaign Studio")
+                    st.session_state.module_usage["Campaign Studio"] += 1
                     with st.spinner("Generating Campaign Assets..."):
                         try:
                             assets = asyncio.run(run_campaign_agent(website, campaign_goal, target_platforms))

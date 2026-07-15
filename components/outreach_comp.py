@@ -40,6 +40,8 @@ def run_outreach():
                 st.write(":material/check_circle: Ready to Analyze")
 
     if generate_clicked:
+        st.session_state.recent_modules.insert(0, "Outreach")
+        st.session_state.module_usage["Outreach"] += 1
         with st.spinner("Running Agents..."):
             res = asyncio.run(run_outreach_agent(website, service, outreachtone))
             st.session_state.outreach_result = res

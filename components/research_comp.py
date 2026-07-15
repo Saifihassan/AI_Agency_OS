@@ -28,6 +28,8 @@ def run_research():
             st.selectbox("Research Depth", ["Standard Analysis", "Deep Dive", "Quick Summary"], label_visibility="collapsed")
             
             if st.button(":material/auto_awesome: Generate Research", use_container_width=True):
+                st.session_state.recent_modules.insert(0, "Research")
+                st.session_state.module_usage["Research"] += 1
                 with st.spinner("Generating Research..."):
                     import asyncio
                     from ai_agents.research import run_flow

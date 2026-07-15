@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import re
 
 st.set_page_config(
     layout="wide",
@@ -41,11 +42,26 @@ def run_dashboard():
 
             if "news" in st.session_state and st.session_state.news:
                 icons = [":material/smart_toy:", ":material/new_releases:", ":material/rocket_launch:", ":material/ads_click:", ":material/article:"]
+                
+                def get_best_url(headline, news):
+                    best_url = "#"
+                    max_score = 0
+                    headline_words = set(re.findall(r'\w+', headline.lower()))
+                    for cat in news.categorized_news:
+                        for article in cat.articles:
+                            text_words = set(re.findall(r'\w+', (article.title + " " + article.summary).lower()))
+                            score = len(headline_words.intersection(text_words))
+                            if score > max_score and score > 2:
+                                max_score = score
+                                best_url = article.url
+                    return best_url
+
                 # Get up to 4 headlines
                 headlines = st.session_state.news.one_liner_headlines[:4]
                 for idx, item in enumerate(headlines):
                     icon = icons[idx % len(icons)]
-                    linked_title = f"<span style='color:inherit; text-decoration:none;'>{item}</span>"
+                    url = get_best_url(item, st.session_state.news)
+                    linked_title = f"<a href='{url}' style='color:white; text-decoration:none;' target='_blank'>{item}</a>"
                     market_item(icon, linked_title, "Recent")
             else:
                 st.write("No market news loaded yet.")
@@ -92,14 +108,14 @@ def run_dashboard():
                 with c3:
                     st.caption(f"<div style='text-align: right;'>{time}</div>", unsafe_allow_html=True)
             # st.markdown("<hr style='margin: 0.2em 0; border: 0.5px solid #444;'>", unsafe_allow_html=True)
-        recent_activity_item(":material/smart_toy:", "OpenAI announced new pricing for GPT-4o", "2h ago")
-        recent_activity_item(":material/smart_toy:", "OpenAI announced new pricing for GPT-4o", "2h ago")
-        recent_activity_item(":material/smart_toy:", "OpenAI announced new pricing for GPT-4o", "2h ago")
-        recent_activity_item(":material/smart_toy:", "OpenAI announced new pricing for GPT-4o", "2h ago")
-        recent_activity_item(":material/smart_toy:", "OpenAI announced new pricing for GPT-4o", "2h ago")
+        if 'recent_modules' in st.session_state and st.session_state.recent_modules:
+            for module in st.session_state.recent_modules[:5]:
+                recent_activity_item(":material/smart_toy:", f"Used {module} module", "Just now")
+        else:
+            st.info("No recent activity.")
 
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("<div style='text-align: left; margin-bottom:30px'>View all market news</div>", unsafe_allow_html=True)
+        # st.markdown("<div style='text-align: left; margin-bottom:30px'>View all market news</div>", unsafe_allow_html=True)
 
 
     with AIActivity:
@@ -112,11 +128,9 @@ def run_dashboard():
                 with col2:
                     st.markdown(f"<div style='text-align:center;margin-bottom:10px'>{text}</div>", unsafe_allow_html=True)
                 with col3:
-                    st.markdown(f"<div style='text-align:center;margin-bottom:10px font-size:15px;'>{number}</div>", unsafe_allow_html=True)
-        ai_activity_item("psychology","Generated reports",38)
-        ai_activity_item("psychology","Generated reports",38)
-        ai_activity_item("psychology","Generated reports",38)
-        ai_activity_item("psychology","Generated reports",38)
-        ai_activity_item("psychology","Generated reports",38)
+                    st.markdown(f"<div style='text-align:center;margin-bottom:10px; font-size:15px;'>{number}</div>", unsafe_allow_html=True)
+        if 'module_usage' in st.session_state:
+            for module, count in st.session_state.module_usage.items():
+                ai_activity_item("psychology", module, count)
 
         

@@ -7,7 +7,6 @@ from datetime import datetime
 from ai_agents.schemas.schemas import NewsResearch, MarketIntelligenceReport
 from dotenv import load_dotenv
 from agents import Agent, Runner, trace, enable_verbose_stdout_logging
-import asyncio
 from ai_agents.agent_tools.tools import tavily_search, duckduckgo_search, searxng_search,serper_search
 from ai_agents.clients import groq,zenmux,nara,gemini,generalcompute,bluesmind
 from ai_agents.prompts.prompts import NEWS_RESEARCHER_INSTRUCTIONS, MARKET_ANALYST_INSTRUCTIONS

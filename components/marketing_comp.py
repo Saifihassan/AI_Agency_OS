@@ -27,6 +27,8 @@ def run_marketing():
             st.write(":material/notifications: No Data")
             
         if st.button(":material/refresh: Refresh News"):
+            st.session_state.recent_modules.insert(0, "Marketing")
+            st.session_state.module_usage["Marketing"] += 1
             with st.spinner("fetching latest news it may take a while..."):
                 news = asyncio.run(run_marketing_news_agent())
                 st.session_state.news = news
@@ -40,8 +42,23 @@ def run_marketing():
     with st.container(border=True):
         st.subheader(":material/content_paste: Today's Market Brief")
         if "news" in st.session_state:
+            import re
+            def get_best_url(headline, news):
+                best_url = "#"
+                max_score = 0
+                headline_words = set(re.findall(r'\w+', headline.lower()))
+                for cat in news.categorized_news:
+                    for article in cat.articles:
+                        text_words = set(re.findall(r'\w+', (article.title + " " + article.summary).lower()))
+                        score = len(headline_words.intersection(text_words))
+                        if score > max_score and score > 2:
+                            max_score = score
+                            best_url = article.url
+                return best_url
+
             for info in st.session_state.news.one_liner_headlines:      
-                st.markdown(f"- {info}")
+                url = get_best_url(info, st.session_state.news)
+                st.markdown(f"- <a href='{url}' style='color: white;'>{info}</a>", unsafe_allow_html=True)
 
 
     # Main Content Columns
@@ -55,7 +72,7 @@ def run_marketing():
                 with st.container(border=True):
                     st.subheader(f":material/article: {cat_news.category}")
                     for article in cat_news.articles:
-                        st.markdown(f"**[{article.title}]({article.url})**")
+                        st.markdown(f"<a href='{article.url}' style='color: white; font-weight: bold; text-decoration: none;' target='_blank'>{article.title}</a>", unsafe_allow_html=True)
                         st.caption(f"{article.summary} | {article.source} | {article.published_date}")
                         st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
 
