@@ -1,18 +1,18 @@
 from agents import Agent,Runner
 import asyncio
-from clients import zenmux,bluesmind,gemini,iamhc
-
+import os
+from clients import zenmux,bluesmind,gemini,iamhc,literouter
 
 sys_msg = """"""
 
 agent = Agent(
     name="test_agent",
-    instructions="you write code for user's request ",
-    model=iamhc
+    instructions="you're a helpfull assistant",
+    model=gemini
 )
 
 async def main():
-    result = await Runner.run(agent, "create a hospital management system with all the necessary functionalities")
+    result = await Runner.run(agent, "hello")
     print(result.final_output)
 
 if __name__ == "__main__":

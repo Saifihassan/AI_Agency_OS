@@ -69,3 +69,11 @@ generalcompute_client = AsyncOpenAI(
 )
 
 generalcompute = OpenAIChatCompletionsModel(model="minimax-m2.7", openai_client=generalcompute_client)
+
+# Literouter client
+literouter_client = AsyncOpenAI(
+    base_url=os.getenv("LITEROUTER_BASE_URL"),
+    api_key=os.getenv("LITEROUTER_API_KEY")
+)
+
+literouter = OpenAIChatCompletionsModel(model="glm-5.1-cheap:free", openai_client=literouter_client)

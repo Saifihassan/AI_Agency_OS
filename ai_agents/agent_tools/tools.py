@@ -1,3 +1,4 @@
+from dotenv import load_dotenv
 from tavily import TavilyClient
 from agents import function_tool,Agent
 import os
@@ -6,7 +7,7 @@ import requests
 from duckduckgo_search import DDGS
 from ai_agents.clients import groq,zenmux,sambanova,bluesmind,gemini,nara,generalcompute,iamhc
 tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
-
+load_dotenv(override=True)
 @function_tool
 def tavily_search(query: str) -> str:
     """
@@ -50,7 +51,7 @@ def searxng_search(query: str) -> str:
     """
     Search the web using SearXNG for up-to-date information.
     """
-    url = os.getenv("SEARXNG_URL", "http://localhost:8080/search")
+    url = os.getenv("SEARXNG_URL")+"/search"
     params = {
         "q": query,
         "format": "json"
