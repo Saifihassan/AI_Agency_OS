@@ -42,16 +42,7 @@ def run_research():
                         st.error(f"Error generating research: {e}")
 
 
-        st.write("")
 
-        # Recent Reports
-        with st.container(border=True):
-            st.caption("RECENT REPORTS")
-            st.write("")
-            st.markdown("[Competitor Analysis: Acme C... →](#)")
-            st.write("")
-            st.markdown("[Q3 E-commerce Trends →](#)")
-            
     with col_right:
         if "research_report" in st.session_state and st.session_state.research_report:
             report_data = st.session_state.research_report
