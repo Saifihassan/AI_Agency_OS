@@ -57,12 +57,20 @@ def run_dashboard():
                     return best_url
 
                 # Get up to 4 headlines
+                try:
+                    from datetime import datetime
+                    fetched_time = datetime.strptime(st.session_state.news.generated_at, "%Y-%m-%d %H:%M:%S")
+                    elapsed_hours = int((datetime.now() - fetched_time).total_seconds() / 3600)
+                    time_str = f"{elapsed_hours}h ago"
+                except Exception:
+                    time_str = "Recent"
+
                 headlines = st.session_state.news.one_liner_headlines[:4]
                 for idx, item in enumerate(headlines):
                     icon = icons[idx % len(icons)]
                     url = get_best_url(item, st.session_state.news)
                     linked_title = f"<a href='{url}' style='color:white; text-decoration:none;' target='_blank'>{item}</a>"
-                    market_item(icon, linked_title, "Recent")
+                    market_item(icon, linked_title, time_str)
             else:
                 st.write("No market news loaded yet.")
                 st.caption("Go to the Marketing page and refresh to load the latest news.")
