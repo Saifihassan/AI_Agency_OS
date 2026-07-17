@@ -2,6 +2,7 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from zoneinfo import ZoneInfo
 
 from datetime import datetime
 from ai_agents.schemas.schemas import NewsResearch, MarketIntelligenceReport
@@ -36,7 +37,7 @@ async def run_marketing_news_agent():
         
         analysis_result = await Runner.run(market_analyst, str(research_result.final_output))
         
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        current_time = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%Y-%m-%d %H:%M:%S")
         analysis_result.final_output.generated_at = current_time
         print(analysis_result.final_output)
         return analysis_result.final_output

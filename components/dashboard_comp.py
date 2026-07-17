@@ -59,8 +59,10 @@ def run_dashboard():
                 # Get up to 4 headlines
                 try:
                     from datetime import datetime
+                    from zoneinfo import ZoneInfo
                     fetched_time = datetime.strptime(st.session_state.news.generated_at, "%Y-%m-%d %H:%M:%S")
-                    elapsed_hours = int((datetime.now() - fetched_time).total_seconds() / 3600)
+                    current_ist_time = datetime.now(ZoneInfo("Asia/Kolkata")).replace(tzinfo=None)
+                    elapsed_hours = int((current_ist_time - fetched_time).total_seconds() / 3600)
                     time_str = f"{elapsed_hours}h ago"
                 except Exception:
                     time_str = "Recent"
