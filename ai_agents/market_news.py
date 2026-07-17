@@ -15,7 +15,7 @@ load_dotenv(override=True)
 news_researcher = Agent(
     name="news_research",
     instructions=NEWS_RESEARCHER_INSTRUCTIONS,
-    model=nara ,
+    model=bluesmind,
     tools=[searxng_search, duckduckgo_search, serper_search],
     output_type=NewsResearch
 )
