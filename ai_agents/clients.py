@@ -60,7 +60,7 @@ iamhc_client = AsyncOpenAI(
     api_key=os.getenv("IAMHC_API_KEY")
 )
 
-iamhc = OpenAIChatCompletionsModel(model="Spark-X2-Flash", openai_client=iamhc_client)
+iamhc = OpenAIChatCompletionsModel(model="Qwen3-Coder-Next-FP8", openai_client=iamhc_client)
 
 # General Compute client
 generalcompute_client = AsyncOpenAI(

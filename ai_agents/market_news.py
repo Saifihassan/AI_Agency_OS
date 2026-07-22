@@ -3,20 +3,20 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from zoneinfo import ZoneInfo
-
+import asyncio
 from datetime import datetime
 from ai_agents.schemas.schemas import NewsResearch, MarketIntelligenceReport
 from dotenv import load_dotenv
 from agents import Agent, Runner, trace, enable_verbose_stdout_logging
 from ai_agents.agent_tools.tools import tavily_search, duckduckgo_search, searxng_search,serper_search
-from ai_agents.clients import groq,zenmux,nara,gemini,generalcompute,bluesmind
+from ai_agents.clients import groq,zenmux,nara,gemini,generalcompute,bluesmind,iamhc
 from ai_agents.prompts.prompts import NEWS_RESEARCHER_INSTRUCTIONS, MARKET_ANALYST_INSTRUCTIONS
 
 load_dotenv(override=True)
 news_researcher = Agent(
     name="news_research",
     instructions=NEWS_RESEARCHER_INSTRUCTIONS,
-    model=generalcompute,
+    model=iamhc,
     tools=[searxng_search, duckduckgo_search, serper_search],
     output_type=NewsResearch
 )
@@ -24,7 +24,7 @@ news_researcher = Agent(
 market_analyst = Agent(
     name="market_analyst",
     instructions=MARKET_ANALYST_INSTRUCTIONS,
-    model=generalcompute    ,
+    model=iamhc    ,
     output_type=MarketIntelligenceReport
 )
 
@@ -41,4 +41,8 @@ async def run_marketing_news_agent():
         analysis_result.final_output.generated_at = current_time
         print(analysis_result.final_output)
         return analysis_result.final_output
+
+
+if __name__ == "__main__":
+    asyncio.run(run_marketing_news_agent())
 

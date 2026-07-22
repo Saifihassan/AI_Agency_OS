@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "duckduckgo-search>=8.1.1",
+    "extra-streamlit-components>=0.1.81",
     "fpdf2>=2.8.7",
     "lucide-py>=0.3.5",
     "openai-agents>=0.18.0",

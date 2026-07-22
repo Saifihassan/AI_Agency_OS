@@ -8,7 +8,7 @@ sys_msg = """"""
 agent = Agent(
     name="test_agent",
     instructions="you're a helpfull assistant",
-    model=gemini
+    model=iamhc
 )
 
 async def main():

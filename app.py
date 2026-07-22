@@ -1,4 +1,3 @@
-from git import Tree
 import streamlit as st
 from pages.dashboard import show_dashboard  
 from pages.content_studio import show_content_studio
@@ -6,10 +5,12 @@ from pages.research import show_research
 from pages.marketing_page import show_marketing
 from pages.outreach import show_outreach
 from pages.competitior import show_competitor
+from pages.Create_workspace import show_create_workspace
+from Database.db import fetch_from_workspaces
 st.set_page_config(
     layout="wide"
 )
-
+records = fetch_from_workspaces()
 if 'recent_modules' not in st.session_state:
     st.session_state.recent_modules = []
 if 'module_usage' not in st.session_state:
@@ -20,15 +21,20 @@ if 'module_usage' not in st.session_state:
         "Outreach": 0,
         "Competitor Analysis": 0
     }
-st.sidebar.markdown("<h1 style='font-size:25px; '>AI Agency OS</h1>", unsafe_allow_html=True)
-
+st.sidebar.markdown("<h1 style='font-size:30px; '>AI Agency OS</h1>", unsafe_allow_html=True)
+st.sidebar.markdown("<h1 style='font-size:15px; '>Workspaces</h1>", unsafe_allow_html=True)
+st.sidebar.selectbox("Active Workspace", records, format_func=lambda record: record[1])    
+workspace_button=st.sidebar.button("+ Create a new Workspace")
+st.sidebar.divider()
 dashboard_page = st.Page(show_dashboard, title="Dashboard", icon=":material/dashboard:")
 content_studio_page = st.Page(show_content_studio, title="Content Studio", icon=":material/palette:")
 research_page = st.Page(show_research, title="Research", icon=":material/search:")
 marketing_page = st.Page(show_marketing, title="Marketing", icon=":material/campaign:")
 outreach_page = st.Page(show_outreach, title="Outreach", icon=":material/send:")
 competitor_page = st.Page(show_competitor, title="Competitor", icon=":material/query_stats:")
+create_workspace_page = st.Page(show_create_workspace, title="Create Workspace", icon=":material/add:")
 pages = [dashboard_page, content_studio_page, research_page, marketing_page, outreach_page, competitor_page]
+all_pages = pages + [create_workspace_page]
 
 st.session_state.dashboard_page = dashboard_page
 st.session_state.content_studio_page = content_studio_page
@@ -36,7 +42,8 @@ st.session_state.research_page = research_page
 st.session_state.marketing_page = marketing_page
 st.session_state.outreach_page = outreach_page
 st.session_state.competitor_page = competitor_page
-pg = st.navigation(pages,position="hidden")
+pg = st.navigation(all_pages, position="hidden")
+
 
 
 with st.sidebar:
@@ -50,6 +57,8 @@ with st.sidebar:
         }
         </style>
     """, unsafe_allow_html=True)
+    if workspace_button:
+        st.switch_page(create_workspace_page)
     for p in pages:
         # with st.container(height="stretch"):
             st.page_link(p, label=p.title, icon=p.icon)
