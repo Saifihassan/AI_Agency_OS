@@ -13,10 +13,12 @@ from ai_agents.clients import groq,zenmux,nara,gemini,generalcompute,bluesmind,i
 from ai_agents.prompts.prompts import NEWS_RESEARCHER_INSTRUCTIONS, MARKET_ANALYST_INSTRUCTIONS
 
 load_dotenv(override=True)
+
+
 news_researcher = Agent(
     name="news_research",
     instructions=NEWS_RESEARCHER_INSTRUCTIONS,
-    model=iamhc,
+    model=nara,
     tools=[searxng_search, duckduckgo_search, serper_search],
     output_type=NewsResearch
 )
@@ -24,15 +26,16 @@ news_researcher = Agent(
 market_analyst = Agent(
     name="market_analyst",
     instructions=MARKET_ANALYST_INSTRUCTIONS,
-    model=iamhc    ,
+    model=bluesmind    ,
     output_type=MarketIntelligenceReport
 )
 
 
-async def run_marketing_news_agent():
+async def run_marketing_news_agent(workspace_name: str = "General", industry: str = "technology"):
     enable_verbose_stdout_logging()
     with trace("market_news_workflow"):
-        research_result = await Runner.run(news_researcher,"most recent news of tech,marketing,startup,AI and how can it help marketing ")
+        prompt = f"Find the most recent news related to the {industry} industry, specifically focusing on how it impacts companies like {workspace_name}. Look for tech, marketing, startup, and AI trends relevant to this."
+        research_result = await Runner.run(news_researcher, prompt)
         print("--- RESEARCH DONE ---")
         
         analysis_result = await Runner.run(market_analyst, str(research_result.final_output))

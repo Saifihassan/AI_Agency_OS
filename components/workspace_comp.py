@@ -1,6 +1,7 @@
 import streamlit as st 
 from pages.dashboard import run_dashboard
 from Database.db import add_to_workspace
+
 def run_workspace():
     st.title("Create a new workspace")
     st.divider()

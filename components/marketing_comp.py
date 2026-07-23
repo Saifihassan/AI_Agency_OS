@@ -5,15 +5,20 @@ import os
 import asyncio
 
 def run_marketing():
-    # Load from cache if not in session state
-    if "news" not in st.session_state:
-        if os.path.exists("market_news_cache.json") and os.path.getsize("market_news_cache.json") > 0:
+    from Database.db import insert_market_news, fetch_market_news
+    
+    workspace = st.session_state.get("active_workspace")
+    workspace_id = workspace[0] if workspace else None
+
+    news = None
+    if workspace_id:
+        report_data = fetch_market_news(workspace_id)
+        if report_data:
             from ai_agents.schemas.schemas import MarketIntelligenceReport
-            with open("market_news_cache.json", "r", encoding="utf-8") as f:
-                try:
-                    st.session_state.news = MarketIntelligenceReport.model_validate_json(f.read())
-                except Exception:
-                    pass  # Ignore invalid JSON so the app doesn't crash
+            try:
+                news = MarketIntelligenceReport.model_validate_json(report_data)
+            except Exception:
+                pass
 
     # Header
     header_col1, header_col2 = st.columns([3, 1])
@@ -21,8 +26,8 @@ def run_marketing():
         st.header("Market Intelligence")
         st.caption("Stay ahead with the latest AI, marketing, SEO and social media updates.")
     with header_col2:
-        if "news" in st.session_state and hasattr(st.session_state.news, 'generated_at') and st.session_state.news.generated_at:
-            st.write(f":material/notifications: {st.session_state.news.generated_at}")
+        if news and hasattr(news, 'generated_at') and news.generated_at:
+            st.write(f":material/notifications: {news.generated_at}")
         else:
             st.write(":material/notifications: No Data")
             
@@ -30,18 +35,20 @@ def run_marketing():
             st.session_state.recent_modules.insert(0, "Marketing")
             st.session_state.module_usage["Marketing"] += 1
             with st.spinner("fetching latest news it may take a while..."):
-                news = asyncio.run(run_marketing_news_agent())
-                st.session_state.news = news
-                # Save to local file for persistence
-                with open("market_news_cache.json", "w", encoding="utf-8") as f:
-                    f.write(news.model_dump_json())
+                workspace = st.session_state.get("active_workspace")
+                workspace_name = workspace[1] if workspace else "General"
+                industry = workspace[3] if workspace and len(workspace) > 3 else "technology"
+                fetched_news = asyncio.run(run_marketing_news_agent(workspace_name, industry))
+                # Save to database
+                if workspace_id:
+                    insert_market_news(workspace_id, fetched_news.model_dump_json())
             st.rerun()    
 
 
     # Today's Market Brief
     with st.container(border=True):
         st.subheader(":material/content_paste: Today's Market Brief")
-        if "news" in st.session_state:
+        if news:
             import re
             def get_best_url(headline, news):
                 best_url = "#"
@@ -56,15 +63,13 @@ def run_marketing():
                             best_url = article.url
                 return best_url
 
-            for info in st.session_state.news.one_liner_headlines:      
-                url = get_best_url(info, st.session_state.news)
+            for info in news.one_liner_headlines:      
+                url = get_best_url(info, news)
                 st.markdown(f"- <a href='{url}' style='color: white;'>{info}</a>", unsafe_allow_html=True)
 
 
     # Main Content Columns
-    if "news" in st.session_state:
-        news = st.session_state.news
-        
+    if news:
         col1, col2 = st.columns(2)
         
         with col1:

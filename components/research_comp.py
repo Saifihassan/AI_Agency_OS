@@ -6,6 +6,11 @@ from utils.text_gen import generate_report_text
 def copy_text_dialog(text):
     st.code(text, language="markdown")
 
+def escape_dollar_signs(text):
+    if not isinstance(text, str):
+        return text
+    return text.replace('$', '\\$')
+
 def run_research():
     st.title("Research Reports")
     st.write("Generate and view detailed AI-powered industry and topic research.")
@@ -21,11 +26,8 @@ def run_research():
             st.write("**Research Topic**")
             research_topic = st.text_area("Research Topic", label_visibility="collapsed", placeholder="e.g., Impact of Generative AI on B2B SaaS marketing strategies in 2024...", height=100)
             
-            st.write("**Website URL**")
-            website_url = st.text_input("Website URL", label_visibility="collapsed", placeholder="https://example.com")
-            
             st.write("**Research Depth**")
-            st.selectbox("Research Depth", ["Standard Analysis", "Deep Dive", "Quick Summary"], label_visibility="collapsed")
+            research_depth = st.selectbox("Research Depth", ["Standard Analysis", "Deep Dive", "Quick Summary"], label_visibility="collapsed")
             
             if st.button(":material/auto_awesome: Generate Research", use_container_width=True):
                 st.session_state.recent_modules.insert(0, "Research")
@@ -34,7 +36,7 @@ def run_research():
                     import asyncio
                     from ai_agents.research import run_flow
                     try:
-                        report = asyncio.run(run_flow(research_topic, website_url))
+                        report = asyncio.run(run_flow(research_topic, research_depth))
                         st.session_state.research_report = report
                         st.success("Research generated successfully!")
                         print(st.session_state.research_report)
@@ -85,17 +87,17 @@ def run_research():
                     # Executive Summary
                     with st.container(border=True):
                         st.markdown("#### :material/description: Executive Summary")
-                        st.write(research.executive_summary)
+                        st.write(escape_dollar_signs(research.executive_summary))
 
                     # Strategic Overview
                     with st.container(border=True):
                         st.markdown("#### :material/explore: Strategic Overview")
-                        st.write(strategy.strategic_overview)
+                        st.write(escape_dollar_signs(strategy.strategic_overview))
                         
                     # Conclusion
                     with st.container(border=True):
                         st.markdown("#### :material/flag: Conclusion")
-                        st.write(strategy.conclusion)
+                        st.write(escape_dollar_signs(strategy.conclusion))
                         
                     # Sources
                     st.write("")
@@ -148,9 +150,9 @@ def run_research():
                         st.markdown("#### :material/search: Key Findings")
                         for finding in research.findings:
                             with st.container(border=True):
-                                st.markdown(f"**{finding.title}**")
-                                st.write(finding.explanation)
-                                st.caption(f"**Why it matters:** {finding.why_it_matters}")
+                                st.markdown(f"**{escape_dollar_signs(finding.title)}**")
+                                st.write(escape_dollar_signs(finding.explanation))
+                                st.caption(f"**Why it matters:** {escape_dollar_signs(finding.why_it_matters)}")
 
                 with tab3:
                     # Recommendations
@@ -158,9 +160,9 @@ def run_research():
                         st.markdown("#### :material/check_circle: Recommendations")
                         for rec in strategy.prioritized_recommendations:
                             with st.container(border=True):
-                                st.markdown(f"**{rec.title}**")
-                                st.write(rec.description)
-                                st.caption(f"**Business Impact:** {rec.business_impact}")
+                                st.markdown(f"**{escape_dollar_signs(rec.title)}**")
+                                st.write(escape_dollar_signs(rec.description))
+                                st.caption(f"**Business Impact:** {escape_dollar_signs(rec.business_impact)}")
 
                     # Quick Wins & Long-term Opportunities
                     qw_col, lto_col = st.columns(2)
@@ -169,16 +171,16 @@ def run_research():
                             with st.container(border=True):
                                 st.markdown("#### :material/flash_on: Quick Wins")
                                 for qw in strategy.quick_wins:
-                                    st.markdown(f"**{qw.title}**")
+                                    st.markdown(f"**{escape_dollar_signs(qw.title)}**")
                                     for step in qw.action_steps:
-                                        st.markdown(f"- {step}")
+                                        st.markdown(f"- {escape_dollar_signs(step)}")
                     with lto_col:
                         if strategy.long_term_opportunities:
                             with st.container(border=True):
                                 st.markdown("#### :material/trending_up: Long Term Opportunities")
                                 for lto in strategy.long_term_opportunities:
-                                    st.markdown(f"**{lto.title}**")
-                                    st.write(lto.description)
+                                    st.markdown(f"**{escape_dollar_signs(lto.title)}**")
+                                    st.write(escape_dollar_signs(lto.description))
         else:
             # Placeholder State before report is generated
             with st.container(border=True):

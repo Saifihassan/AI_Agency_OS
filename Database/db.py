@@ -79,10 +79,7 @@ def init_database():
         CREATE TABLE IF NOT EXISTS market_news (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             workspace_id INTEGER,
-            headline TEXT,
-            summary TEXT,
-            url TEXT,
-            published_at TIMESTAMP,
+            report_data TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
         """
@@ -129,12 +126,40 @@ def fetch_from_workspaces():
     con = get_connection()
     cursor = con.cursor()
     
-    cursor.execute("SELECT id,name FROM workspaces")
+    cursor.execute("SELECT * FROM workspaces")
     records = cursor.fetchall()
     
     con.close()
     
     return records
+
+def insert_market_news(workspace_id, report_data):
+    con = get_connection()
+    cursor = con.cursor()
+    cursor.execute(
+        """
+        INSERT INTO market_news (workspace_id, report_data)
+        VALUES (?, ?)
+        """,
+        (workspace_id, report_data)
+    )
+    con.commit()
+    con.close()
+
+def fetch_market_news(workspace_id):
+    con = get_connection()
+    cursor = con.cursor()
+    cursor.execute(
+        """
+        SELECT report_data FROM market_news 
+        WHERE workspace_id = ?
+        ORDER BY created_at DESC LIMIT 1
+        """,
+        (workspace_id,)
+    )
+    record = cursor.fetchone()
+    con.close()
+    return record[0] if record else None
 if __name__ == "__main__":
     init_database()
 

@@ -7,15 +7,19 @@ st.set_page_config(
     
 )
 def run_dashboard():
-    # Load news from cache if not in session state
-    if "news" not in st.session_state:
-        if os.path.exists("market_news_cache.json") and os.path.getsize("market_news_cache.json") > 0:
+    from Database.db import fetch_market_news
+    workspace = st.session_state.get("active_workspace")
+    workspace_id = workspace[0] if workspace else None
+    
+    news = None
+    if workspace_id:
+        report_data = fetch_market_news(workspace_id)
+        if report_data:
             from ai_agents.schemas.schemas import MarketIntelligenceReport
-            with open("market_news_cache.json", "r", encoding="utf-8") as f:
-                try:
-                    st.session_state.news = MarketIntelligenceReport.model_validate_json(f.read())
-                except Exception:
-                    pass
+            try:
+                news = MarketIntelligenceReport.model_validate_json(report_data)
+            except Exception:
+                pass
     # Top Header section
     st.header("Good Morning, Hassan! :material/waving_hand:")
     st.caption("Here's what's happening in your marketing world today.")
@@ -40,7 +44,7 @@ def run_dashboard():
                     st.caption(f"<div style='text-align: right;'>{time}</div>", unsafe_allow_html=True)
                 st.markdown("<hr style='margin: 0.2em 0; border: 0.5px solid #444;'>", unsafe_allow_html=True)
 
-            if "news" in st.session_state and st.session_state.news:
+            if news:
                 icons = [":material/smart_toy:", ":material/new_releases:", ":material/rocket_launch:", ":material/ads_click:", ":material/article:"]
                 
                 def get_best_url(headline, news):
@@ -60,17 +64,17 @@ def run_dashboard():
                 try:
                     from datetime import datetime
                     from zoneinfo import ZoneInfo
-                    fetched_time = datetime.strptime(st.session_state.news.generated_at, "%Y-%m-%d %H:%M:%S")
+                    fetched_time = datetime.strptime(news.generated_at, "%Y-%m-%d %H:%M:%S")
                     current_ist_time = datetime.now(ZoneInfo("Asia/Kolkata")).replace(tzinfo=None)
                     elapsed_hours = int((current_ist_time - fetched_time).total_seconds() / 3600)
                     time_str = f"{elapsed_hours}h ago"
                 except Exception:
                     time_str = "Recent"
 
-                headlines = st.session_state.news.one_liner_headlines[:4]
+                headlines = news.one_liner_headlines[:4]
                 for idx, item in enumerate(headlines):
                     icon = icons[idx % len(icons)]
-                    url = get_best_url(item, st.session_state.news)
+                    url = get_best_url(item, news)
                     linked_title = f"<a href='{url}' style='color:white; text-decoration:none;' target='_blank'>{item}</a>"
                     market_item(icon, linked_title, time_str)
             else:
