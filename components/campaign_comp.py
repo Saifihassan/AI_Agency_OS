@@ -8,7 +8,7 @@ def copy_text_dialog(text):
 
 def run_campaign():
     # Title Section
-    st.title("Campaign Studio")
+    st.title("Content Studio")
     st.write("Design high-converting marketing campaigns driven by data.")
     st.write("")
 

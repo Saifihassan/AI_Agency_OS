@@ -1,6 +1,9 @@
 import streamlit as st
 from utils.pdf_gen import generate_pdf
 from utils.text_gen import generate_report_text
+import json
+from Database.db import insert_research_report, fetch_last_research_report
+from ai_agents.schemas.schemas import ResearchAnalysis, StrategyReport
 
 @st.dialog("Copy Report Text", width="large")
 def copy_text_dialog(text):
@@ -37,27 +40,71 @@ def run_research():
                     from ai_agents.research import run_flow
                     try:
                         report = asyncio.run(run_flow(research_topic, research_depth))
-                        st.session_state.research_report = report
+                        
+                        workspace_id = st.session_state.active_workspace[0]
+                        
+                        all_sources = []
+                        if hasattr(report["research"], 'findings') and report["research"].findings:
+                            for finding in report["research"].findings:
+                                if hasattr(finding, 'sources') and finding.sources:
+                                    all_sources.extend(finding.sources)
+                        
+                        unique_sources_dict = {source.url: source.model_dump(mode='json') for source in all_sources if hasattr(source, 'url')}
+                        sources_json = json.dumps(list(unique_sources_dict.values()))
+                        
+                        findings_json = json.dumps([f.model_dump(mode='json') for f in report["research"].findings])
+                        prioritized_recommendations_json = json.dumps([r.model_dump(mode='json') for r in report["strategy"].prioritized_recommendations])
+                        quick_wins_json = json.dumps([qw.model_dump(mode='json') for qw in report["strategy"].quick_wins])
+                        long_term_opportunities_json = json.dumps([lto.model_dump(mode='json') for lto in report["strategy"].long_term_opportunities])
+                        
+                        insert_research_report(
+                            workspace_id=workspace_id,
+                            report_title=report["research"].report_title,
+                            research_topic=report["research"].research_topic,
+                            executive_summary=report["research"].executive_summary,
+                            findings=findings_json,
+                            strategic_overview=report["strategy"].strategic_overview,
+                            prioritized_recommendations=prioritized_recommendations_json,
+                            quick_wins=quick_wins_json,
+                            long_term_opportunities=long_term_opportunities_json,
+                            conclusion=report["strategy"].conclusion,
+                            sources=sources_json
+                        )
+                        
                         st.success("Research generated successfully!")
-                        print(st.session_state.research_report)
+                        st.rerun()
                     except Exception as e:
                         st.error(f"Error generating research: {e}")
 
 
 
     with col_right:
-        if "research_report" in st.session_state and st.session_state.research_report:
-            report_data = st.session_state.research_report
-            
-            if not isinstance(report_data, dict):
-                # Handle old session state data gracefully
-                # st.warning("The report format has been updated to include more details. Please click 'Generate Research' again to view the new layout.")
-                st.session_state.research_report = None
-                st.rerun()
-            
-            research = report_data["research"]
-            strategy = report_data["strategy"]
-            
+        workspace_id = st.session_state.active_workspace[0]
+        last_report_record = fetch_last_research_report(workspace_id)
+        
+        research = None
+        strategy = None
+        
+        if last_report_record:
+            try:
+                research = ResearchAnalysis(
+                    report_title=last_report_record["report_title"],
+                    research_topic=last_report_record["research_topic"],
+                    executive_summary=last_report_record["executive_summary"],
+                    findings=json.loads(last_report_record["findings"])
+                )
+                strategy = StrategyReport(
+                    strategic_overview=last_report_record["strategic_overview"],
+                    prioritized_recommendations=json.loads(last_report_record["prioritized_recommendations"]),
+                    quick_wins=json.loads(last_report_record["quick_wins"]),
+                    long_term_opportunities=json.loads(last_report_record["long_term_opportunities"]),
+                    conclusion=last_report_record["conclusion"]
+                )
+            except Exception as e:
+                st.error(f"Error parsing the research report from the database: {e}")
+                pass
+                
+        if research and strategy:
             # Report Container
             with st.container(border=True):
                 # Top Bar

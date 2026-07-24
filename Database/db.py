@@ -49,9 +49,16 @@ def init_database():
         CREATE TABLE IF NOT EXISTS research_reports (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             workspace_id INTEGER,
-            title TEXT,
-            content TEXT,
-            source TEXT,
+            report_title TEXT,
+            research_topic TEXT,
+            executive_summary TEXT,
+            findings TEXT,
+            strategic_overview TEXT,
+            prioritized_recommendations TEXT,
+            quick_wins TEXT,
+            long_term_opportunities TEXT,
+            conclusion TEXT,
+            sources TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
         """
@@ -62,12 +69,17 @@ def init_database():
         CREATE TABLE IF NOT EXISTS competitors (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             workspace_id INTEGER,
-            name TEXT,
             website TEXT,
-            summary TEXT,
+            company_name TEXT,
+            company_overview TEXT,
+            industry TEXT,
+            target_audience TEXT,
+            market_position TEXT,
+            core_differentiator TEXT,
             strengths TEXT,
             weaknesses TEXT,
-            marketing_strategy TEXT,
+            opportunities TEXT,
+            recommended_strategy TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -160,6 +172,64 @@ def fetch_market_news(workspace_id):
     record = cursor.fetchone()
     con.close()
     return record[0] if record else None
+def insert_research_report(workspace_id, report_title, research_topic, executive_summary, findings, strategic_overview, prioritized_recommendations, quick_wins, long_term_opportunities, conclusion, sources):
+    con = get_connection()
+    cursor = con.cursor()
+    cursor.execute(
+        """
+        INSERT INTO research_reports (workspace_id, report_title, research_topic, executive_summary, findings, strategic_overview, prioritized_recommendations, quick_wins, long_term_opportunities, conclusion, sources)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (workspace_id, report_title, research_topic, executive_summary, findings, strategic_overview, prioritized_recommendations, quick_wins, long_term_opportunities, conclusion, sources)
+    )
+    con.commit()
+    con.close()
+
+def fetch_last_research_report(workspace_id):
+    con = get_connection()
+    con.row_factory = sqlite3.Row
+    cursor = con.cursor()
+    cursor.execute(
+        """
+        SELECT * FROM research_reports 
+        WHERE workspace_id = ?
+        ORDER BY created_at DESC LIMIT 1
+        """,
+        (workspace_id,)
+    )
+    record = cursor.fetchone()
+    con.close()
+    return dict(record) if record else None
+
+def insert_competitor_analysis(workspace_id, website, company_name, company_overview, industry, target_audience, market_position, core_differentiator, strengths, weaknesses, opportunities, recommended_strategy):
+    con = get_connection()
+    cursor = con.cursor()
+    cursor.execute(
+        """
+        INSERT INTO competitors (workspace_id, website, company_name, company_overview, industry, target_audience, market_position, core_differentiator, strengths, weaknesses, opportunities, recommended_strategy)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (workspace_id, website, company_name, company_overview, industry, target_audience, market_position, core_differentiator, strengths, weaknesses, opportunities, recommended_strategy)
+    )
+    con.commit()
+    con.close()
+
+def fetch_last_competitor_analysis(workspace_id):
+    con = get_connection()
+    con.row_factory = sqlite3.Row
+    cursor = con.cursor()
+    cursor.execute(
+        """
+        SELECT * FROM competitors 
+        WHERE workspace_id = ?
+        ORDER BY created_at DESC LIMIT 1
+        """,
+        (workspace_id,)
+    )
+    record = cursor.fetchone()
+    con.close()
+    return dict(record) if record else None
+
 if __name__ == "__main__":
     init_database()
 

@@ -1,6 +1,9 @@
 import streamlit as st
 import asyncio
 from ai_agents.competitor import run_competitor_agent
+import json
+from Database.db import insert_competitor_analysis, fetch_last_competitor_analysis
+from ai_agents.schemas.schemas import CompetitiveAnalysis, CompanySnapshot, Opportunity
 
 def run_competitor():
     st.title("Competitor Analysis")
@@ -21,9 +24,51 @@ def run_competitor():
         st.session_state.module_usage["Competitor Analysis"] += 1
         with st.spinner("Analyzing Competitor..."):
             res = asyncio.run(run_competitor_agent(website))
-            st.session_state.competitor_result = res
+            workspace_id = st.session_state.active_workspace[0]
             
-    result = st.session_state.get("competitor_result")
+            strengths_json = json.dumps(res.strengths)
+            weaknesses_json = json.dumps(res.weaknesses)
+            opportunities_json = json.dumps([opp.model_dump(mode='json') for opp in res.opportunities])
+            
+            insert_competitor_analysis(
+                workspace_id=workspace_id,
+                website=website,
+                company_name=res.company_snapshot.company_name,
+                company_overview=res.company_snapshot.company_overview,
+                industry=res.company_snapshot.industry,
+                target_audience=res.company_snapshot.target_audience,
+                market_position=res.company_snapshot.market_position,
+                core_differentiator=res.company_snapshot.core_differentiator,
+                strengths=strengths_json,
+                weaknesses=weaknesses_json,
+                opportunities=opportunities_json,
+                recommended_strategy=res.recommended_strategy
+            )
+            st.rerun()
+            
+    workspace_id = st.session_state.active_workspace[0]
+    last_record = fetch_last_competitor_analysis(workspace_id)
+    
+    result = None
+    if last_record:
+        try:
+            snapshot = CompanySnapshot(
+                company_name=last_record["company_name"],
+                company_overview=last_record["company_overview"],
+                industry=last_record["industry"],
+                target_audience=last_record["target_audience"],
+                market_position=last_record["market_position"],
+                core_differentiator=last_record["core_differentiator"]
+            )
+            result = CompetitiveAnalysis(
+                company_snapshot=snapshot,
+                strengths=json.loads(last_record["strengths"]),
+                weaknesses=json.loads(last_record["weaknesses"]),
+                opportunities=json.loads(last_record["opportunities"]),
+                recommended_strategy=last_record["recommended_strategy"]
+            )
+        except Exception as e:
+            st.error(f"Error parsing last competitor analysis: {e}")
 
     st.write("")
 

@@ -1,0 +1,19 @@
+import streamlit as st
+
+
+
+def run_content():
+    st.title("Content Studio")
+
+    if "messagees" not in st.session_state:
+        st.session_state.messages = []
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    if prompt:= st.chat_input("what is up chat?"):
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        st.session_state.messages.append({"role":"user","content":prompt})
+
+    
